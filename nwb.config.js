@@ -3,10 +3,27 @@ module.exports = {
   npm: {
     esModules: true,
     umd: {
-      global: 'umd',
+      global: 'UMD',
       externals: {
-        react: 'React'
+        react: 'React',
+        rxjs: 'Rxjs'
       }
+    }
+  },
+  webpack: {
+    extra: {
+      module: {
+        rules: [{
+          test: /\.less$/,
+          use: [{
+            loader: "style-loader" 
+          }, {
+            loader: "css-loader?modules" 
+          }, {
+            loader: "less-loader"
+          }]
+        }]
+      },
     }
   }
 }

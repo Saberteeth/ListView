@@ -24,9 +24,17 @@
     "react": "16.x"
   },
   "devDependencies": {
+    "antd": "^3.16.4",
+    "jquery": "^3.4.0",
     "nwb": "0.23.x",
-    "react": "^16.8.6",
-    "react-dom": "^16.8.6"
+    "less": "^3.9.0",
+    "less-loader": "^4.1.0",
+    "react": "^16.6.3",
+    "react-dom": "^16.6.3",
+    "react-svg": "^8.0.6",
+    "react-test-renderer": "^16.6.3",
+    "rxjs": "^6.3.3",
+    "style-loader": "^0.23.1"
   },
   "author": "",
   "homepage": "",
