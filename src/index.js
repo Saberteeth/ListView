@@ -43,22 +43,25 @@ export class List extends Component {
         let i = start;
         let h = this.listRef.current ? this.listRef.current.scrollTop : 0;
         let ended = 0;
+        const cache = adapter.cacheItemSize < 1 ? adapter.cacheItemSize * adapter.size : adapter.cacheItemSize;
         
         for (let key = 0; i < adapter.size; i += 1, key += 1) {
-            this.isEnding = i === adapter.size - 1;
             const itemH = adapter.getItemHeight(i);
             h += itemH;
             items.push(<li key={key} style={{ height: `${itemH}px` }}>{adapter.getItem(datas[i], i)}</li>);
-            if(ended > 5) break;
+            if(ended > cache) break;
             if (h >= this.state.height + offTop) {
                 ended += 1;
             }
         }
+            
+        this.isEnding = i >= adapter.size - 1
         return items;
     }
 
     onScroll(e) {
         const { adapter } = this.props;
+        adapter.onScroll && adapter.onScroll(e);
         let maxOffY = 0
         let i = 0
         for (; i < adapter.size; i += 1) {
@@ -70,6 +73,7 @@ export class List extends Component {
             }
         }
         this.setState({ start: i, offTop: maxOffY });
+
     }
 
     get footHeight() {
@@ -87,8 +91,6 @@ export class List extends Component {
             footStyle.height = this.footHeight;
             headStyle.height = this.state.offTop;
         }
-
-
         
         return (<ul ref={this.listRef} onScroll={this.onScroll.bind(this)} className='list' style={{ height }}>
             <li style={{ height: this.state.offTop }} />
@@ -100,6 +102,10 @@ export class List extends Component {
 
 export class Adapter {
     list = null;
+
+    get cacheItemSize() {
+        return 10;
+    }
 
     get defaultHeight() {
         return 200;
@@ -140,7 +146,7 @@ export class Adapter {
         this.list = that;
     }
 
-    onScroll(start) {
+    onScroll(event) {
     }
 
     checkItem(index) {
