@@ -1,11 +1,5 @@
 import React, { Component } from 'react';
-import { interval } from 'rxjs';
-import { take } from 'rxjs/operators';
 import './index.less';
-
-function parabola(x, max) {
-    return x * x * max / 3000;
-}
 
 export class List extends Component {
     constructor(props) {
@@ -18,112 +12,88 @@ export class List extends Component {
         adapter.binded(this);
         this.state = {
             start: 0,
+            offTop: 0,
             height: 0,
-            maxStart: 0,
-            paddingTop: 0,
-            maxOff: 0,
+            offFoot: 0,
+            maxHeight: 0,
         }
-        this.timer = interval(1000/60).pipe(take(60));
     }
 
     componentDidMount() {
+        const { adapter } = this.props;
         let height = 0;
         !this.listRef.current ? (height = this.props.adapter.defaultHeight) : (height = this.listRef.current.clientHeight);
-        
-        let h = 0;
-        let i = this.props.adapter.size - 1
-        for (; i >= 0 && h < height; i--) {
-            h += this.props.adapter.getItemHeight(i);
+        let maxHeight = 0;
+        for (let i = 0; i < adapter.size; i += 1) {
+            maxHeight += adapter.getItemHeight(i);
         }
-        
+
         this.setState({
             height,
-            maxStart: i + 1,
-            maxOff: h - height
+            maxHeight
         });
     }
 
     isEnding = false;
     renderItem() {
         const { adapter } = this.props;
-        const { paddingTop, start } = this.state;
+        const { start, offTop } = this.state;
         const items = [];
         const datas = adapter.getDataArr();
-        let h = paddingTop;
-        let i = start
+        let i = start;
+        let h = this.listRef.current ? this.listRef.current.scrollTop : 0;
+        let ended = 0;
+        
         for (let key = 0; i < adapter.size; i += 1, key += 1) {
+            this.isEnding = i === adapter.size - 1;
             const itemH = adapter.getItemHeight(i);
             h += itemH;
-            items.push(<li key={key} style={{ height: `${itemH}px`, top: `${paddingTop}px` }}>{adapter.getItem(datas[i], i)}</li>);
-            if(h >= this.state.height) {
-                break;
+            items.push(<li key={key} style={{ height: `${itemH}px` }}>{adapter.getItem(datas[i], i)}</li>);
+            if(ended > 5) break;
+            if (h >= this.state.height + offTop) {
+                ended += 1;
             }
         }
-        this.isEnding = i >= adapter.size - 1;
         return items;
     }
 
-    scroll(e) {
+    onScroll(e) {
         const { adapter } = this.props;
-        const offY = this.state.paddingTop - e.deltaY;
-        if (this.isEnding && this.state.start >= this.state.maxStart) {
-            if (this.state.start > this.state.maxStart) {
-                this.setState({ paddingTop: -this.state.maxOff, start: this.state.maxStart });
-                adapter.onScroll(this.state.maxStart)
-                return true;
-            } else if (this.state.maxOff + offY <= 0) {
-                this.setState({ paddingTop: -this.state.maxOff, start: this.state.maxStart });
-                adapter.onScroll(this.state.maxStart)
-                return true;
+        let maxOffY = 0
+        let i = 0
+        for (; i < adapter.size; i += 1) {
+            let newOff = maxOffY + adapter.getItemHeight(i);
+            if (e.target.scrollTop >= newOff) {
+                maxOffY = newOff;
+            } else {
+                break;
             }
         }
-
-        if (offY >= 0 && this.state.start == 0) {
-            this.setState({ paddingTop: 0 });
-            return true;
-        }
-
-        const willState = { paddingTop: offY };
-        if (offY > 0 && this.state.start != 0) {
-            willState.start = this.state.start - 1;
-            willState.paddingTop = -adapter.getItemHeight(willState.start);
-        } else if (adapter.getItemHeight(this.state.start) + offY <= 0) {
-            willState.start = this.state.start + 1;
-            willState.paddingTop = 0;
-        }
-
-        adapter.onScroll(willState.start || this.state.start);
-        this.setState(willState);
-        return true;
+        this.setState({ start: i, offTop: maxOffY });
     }
 
-    lasTouchY = 0;
-    lastDelatY = 0;
-    onTouchStart(e) {
-        const touch = e.touches[0];
-        this.lasTouchY = touch.clientY;
-    }
-
-    onTouch(e) {
-        const touch = e.touches[0];
-        this.lastDelatY = this.lasTouchY - touch.clientY;
-        this.scroll({ deltaY: this.lastDelatY});
-        this.lasTouchY = touch.clientY;
-    }
-
-    action = null;
-    onTouchEnd() {
-        if(Math.abs(this.lastDelatY) < 4) return false;
-        if(this.action) this.action.unsubscribe();
-        this.action = this.timer.subscribe(x=>{
-            this.scroll({ deltaY: parabola(59 - x, this.lastDelatY)})
-        });
+    get footHeight() {
+        return this.state.maxHeight - this.state.height - this.state.offTop;
     }
 
     render() {
         const { height = '100%' } = this.props;
-        return (<ul ref={this.listRef} onWheel={this.scroll.bind(this)} onTouchEnd={this.onTouchEnd.bind(this)} onTouchMove={this.onTouch.bind(this)} onTouchStart={this.onTouchStart.bind(this)} className='list' style={{ height }}>
+        const footStyle = {};
+        const headStyle = {};
+        if(this.isEnding) {
+            footStyle.height = 0;
+            headStyle.height = this.state.maxHeight - this.state.height;
+        } else {
+            footStyle.height = this.footHeight;
+            headStyle.height = this.state.offTop;
+        }
+
+
+        
+        return (<ul ref={this.listRef} onScroll={this.onScroll.bind(this)} className='list' style={{ height }}>
+            <li style={{ height: this.state.offTop }} />
             {this.renderItem()}
+            <li style={footStyle} />
         </ul>)
     }
 }
@@ -138,10 +108,10 @@ export class Adapter {
     get maxStart() {
         try {
             return this.list.state.maxStart;
-        } catch(err) {
+        } catch (err) {
             return 0;
         }
-        
+
     }
 
     getDataArr() {
@@ -174,9 +144,9 @@ export class Adapter {
     }
 
     checkItem(index) {
-        if(typeof index !== 'number') return;
-        setTimeout(()=>{
-            if(index >= 0 && index < this.size) {
+        if (typeof index !== 'number') return;
+        setTimeout(() => {
+            if (index >= 0 && index < this.size) {
                 let start = index;
                 let paddingTop = 0;
                 index > this.list.state.maxStart && (start = this.list.state.maxStart) && (paddingTop = this.list.state.maxOff);
@@ -184,7 +154,7 @@ export class Adapter {
             } else {
                 console.warn(`${index} 设置超出了范围。`);
             }
-        },0)
+        }, 0)
     }
 }
 

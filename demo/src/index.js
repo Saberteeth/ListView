@@ -99,9 +99,6 @@ class Demo extends Component {
         {this.state.isBadModel ? this.renderBadModel() : (<div style={{ height: '400px', width: '400px', marginTop: '8px' }}>
           <List adapter={this.adapter} />
         </div>)}
-        <div style={style}>
-          <Slider value={this.state.input} defaultValue={0} max={this.adapter.maxStart} onChange={this.onCeckItem.bind(this)} />
-        </div>
       </div>
     </div>
   }
