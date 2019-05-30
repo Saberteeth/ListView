@@ -77,9 +77,9 @@ class Demo extends Component {
   }
 
   renderBadModel() {
-    return <ul className="list" style={{ height: '200px', overflowY: 'scroll' }}>
+    return <ul className="list" style={{ height: '400px', width: '400px', overflowY: 'scroll', float: 'left' }}>
       {this.adapter.getDataArr().map(e => {
-        return (<li style={{ height: '50px', padding: '10px' }} key={e}><img height={30} style={{ paddingRight: '10px' }} src={iconSVG} />{e}</li>)
+        return (<li style={{ height: '80px', padding: '10px' }} key={e}><img height={60} style={{ paddingRight: '10px' }} src={iconSVG} />{e}</li>)
       })}
     </ul>
   }
