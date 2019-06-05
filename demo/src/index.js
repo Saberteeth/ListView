@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import 'antd/dist/antd.css';
 import { render } from 'react-dom'
 import ListView from '../../src';
-import { Slider, message } from 'antd';
+import { Slider, message, Table } from 'antd';
 import iconSVG from './icon.svg'
 const { List, Adapter } = ListView;
 
@@ -62,6 +62,32 @@ class Demo extends Component {
     input: 0,
     size: 100,
     isBadModel: false,
+    data: [
+      {
+        key: '1',
+        name: 'John Brown',
+        age: 32,
+        address: 'New York No. 1 Lake Park',
+      },
+      {
+        key: '2',
+        name: 'Jim Green',
+        age: 42,
+        address: 'London No. 1 Lake Park',
+      },
+      {
+        key: '3',
+        name: 'Joe Black',
+        age: 32,
+        address: 'Sidney No. 1 Lake Park',
+      },
+      {
+        key: '4',
+        name: 'Jim Red',
+        age: 32,
+        address: 'London No. 2 Lake Park',
+      },
+    ]
   }
 
   onClick(index) {
@@ -88,6 +114,24 @@ class Demo extends Component {
     const style = {
       width: 400,
     };
+    const columns = [
+      {
+        title: 'Name',
+        dataIndex: 'name',
+        key: 'name',
+      },
+      {
+        title: 'Age',
+        dataIndex: 'age',
+        key: 'age',
+        sorter: (a, b) => a.age - b.age,
+      },
+      {
+        title: 'Address',
+        dataIndex: 'address',
+        key: 'address',
+      },
+    ];
     return <div>
       <div style={{ padding: '20px' }}>
         <div style={{ paddingBottom: '10px' }}><input value={this.state.size} type='number' onChange={e => {
@@ -100,6 +144,7 @@ class Demo extends Component {
           <List adapter={this.adapter} />
         </div>)}
       </div>
+      {/* <Table columns={columns} dataSource={this.state.data} onChange={this.handleChange} /> */}
     </div>
   }
 }
