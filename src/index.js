@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
-import Operator from './operator';
 import './index.less';
-const { by, operator, operators } = Operator;
-const { debounceTime } = operators;
+// import Operator from './operator';
+// const { by, operator, operators } = Operator;
+// const { throttleTime } = operators;
 
-export class List extends by(Component) {
+export class List extends Component {
     constructor(props) {
         super(props);
         const { adapter } = props;
@@ -16,8 +16,8 @@ export class List extends by(Component) {
         this.state = {
             start: 0,
             height: 0,
-            offFoot: 0,
             maxHeight: 0,
+            offTop: 0,
         }
     }
 
@@ -25,97 +25,74 @@ export class List extends by(Component) {
         const { adapter } = this.props;
         let height = 0;
         !this.listRef.current ? (height = this.props.adapter.defaultHeight) : (height = this.listRef.current.clientHeight);
-        let maxHeight = 0;
-        for (let i = 0; i < adapter.size; i += 1) {
-            maxHeight += adapter.getItemHeight(i);
-        }
-
         this.setState({
             height,
-            maxHeight
+            maxHeight: adapter.getItemHeight() * adapter.size
         });
     }
 
-    isEnding = false;
-    renderItem(offTop) {
+    footer = 0;
+    renderItem() {
         const { adapter } = this.props;
         const items = [];
         const datas = adapter.getDataArr();
-        let i = this.cacheStart;
-        let h = this.listRef.current ? this.listRef.current.scrollTop - this.hideTop : 0;
-        let begin = 0;
-        
+        const offH = this.listRef.current ? (this.listRef.current.scrollTop - this.state.offTop) : 0;
+        let h = 0;
+        let i = this.state.start;
         for (let key = 0; i < adapter.size; i += 1, key += 1) {
-            const itemH = adapter.getItemHeight(i);
-            h += itemH;
-            items.push(<li key={key} style={{ height: `${itemH}px` }}>{adapter.getItem(datas[i], i)}</li>);
+            h += adapter.getItemHeight();
+            items.push(<li key={key} style={{ height: adapter.getItemHeight() }}>{adapter.getItem(datas[i], i)}</li>);
             
-            if (h >= this.state.height + offTop) {
-                if(!begin) {
-                    begin = i;
-                } else if(i - begin > adapter.cacheItemSize) {
-                    break;
-                }
-            }
-        }
-            
-        this.isEnding = i >= adapter.size - 1;
-        return items;
-    }
-
-    get hideTop() {
-        let off = 0;
-        const { adapter } = this.props;
-        for(let i=0;i<this.state.start;i+=1) {
-            off += adapter.getItemHeight(i);
-        }
-        return off;
-    }
-
-    onScroll(e) {
-        const { adapter } = this.props;
-        adapter.onScroll && adapter.onScroll(e);
-        let maxOffY = 0
-        let i = 0
-        for (; i < adapter.size; i += 1) {
-            let newOff = maxOffY + adapter.getItemHeight(i);
-            if (e.target.scrollTop >= newOff) {
-                maxOffY = newOff;
-            } else {
+            if(h > this.state.height + offH) {
                 break;
             }
         }
         
-        this.setState({ start: i });
+        this.footer = this.state.maxHeight - this.state.offTop - h;
+        return items;
+    }
+    
+    onScroll(e) {
+        const { adapter } = this.props;
+        let { start, offTop } = this.state;
+        const last = (off, index = 1) => {
+            return Math.round(((off - e.target.scrollTop)/adapter.getItemHeight()) + .5);
+        }
+       
+        const next = (off, index = 1) => {
+            return Math.round(((e.target.scrollTop - off)/adapter.getItemHeight()) + .5);
+        }
+       
+        if(e.target.scrollTop < offTop) {
+            // 加载上一条
+            const offIndex = last(offTop);
+            start -= offIndex;
+            offTop -= offIndex * adapter.getItemHeight();
+        } else if(e.target.scrollTop > offTop + adapter.getItemHeight()) {
+            //加载下一条
+            const offIndex = next(offTop + adapter.getItemHeight());
+            start += offIndex;
+            offTop += offIndex * adapter.getItemHeight();
+        }
+        start < 0 && (start = 0, offTop = 0);
+        const lastScrollTop =  e.target.scrollTop;
+        this.setState({ start, offTop },()=>{
+            // 修正高度
+            this.listRef.current.scrollTop = lastScrollTop;
+        });
     }
 
     get footHeight() {
         return this.isEnding ? 0 : this.state.maxHeight - this.state.height - this.offTop;
     }
 
-    get cacheStart() {
-        const { adapter } = this.props;
-        const v = this.state.start - adapter.cacheItemSize;
-        return v > 0 ? v : 0;
-    }
-
-    get offTop() {
-        const { adapter } = this.props;
-        let offTop = 0;
-        for(let i=0;i<this.cacheStart;i+=1) {
-            offTop += adapter.getItemHeight(i);
-        }
-        return offTop;
-    }
-
     render() {
         const { height = '100%' } = this.props;
-        const offTop = this.offTop;
-        const items = this.renderItem(offTop);
+        const items = this.renderItem();
         return (<ul ref={this.listRef} onScroll={this.onScroll.bind(this)} className='list' style={{ height }}>
-            <li style={{ height: offTop }} />
+            <li style={{ height: this.state.offTop }} />
             {items}
-            <li style={{ height: this.footHeight }} />
+            <li  style={{ height: this.footer }}/>
         </ul>)
     }
 }
@@ -154,7 +131,7 @@ export class Adapter {
         return null;
     }
 
-    getItemHeight(index) {
+    getItemHeight() {
         return 0;
     }
 

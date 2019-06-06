@@ -21,8 +21,8 @@ class Demo extends Component {
         return <div style={{ fontSize: `${size == 60 ? 30 : 12}px`, padding: '10px'  }} onClick={()=>{ message.info(`${index} 被点击了。`) }} ><img height={size} src={iconSVG} style={{ marginRight: '10px' }} />{data}</div>;
       }
 
-      getItemHeight(i) {
-        return i%2 == 0 ? 50: 80;
+      getItemHeight() {
+        return 80;
       }
 
       onScroll(e) {
@@ -60,7 +60,7 @@ class Demo extends Component {
   state = {
     value: '请输入内容',
     input: 0,
-    size: 100,
+    size: 10,
     isBadModel: false,
     data: [
       {
