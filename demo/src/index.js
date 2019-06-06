@@ -5,6 +5,7 @@ import Operator from './operator';
 import ListView from '../../src';
 import { Slider, message, Table } from 'antd';
 import iconSVG from './icon.svg'
+import './index.less'
 const { List, Adapter } = ListView;
 const { by, operator, operators } = Operator;
 const { debounceTime } = operators;
@@ -19,7 +20,7 @@ class Demo extends Component {
         return that.arr;
       }
 
-      @operator(debounceTime(500))
+      @operator(debounceTime(500)) // 消除疯狂点击
       onClickItem(index) {
         message.info(`${index} 被点击了。`);
       }
