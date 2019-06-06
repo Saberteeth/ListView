@@ -34,18 +34,12 @@ class Demo extends Component {
 
   resize() {
     let scale = 0;
-    if (this.adapter) {
-      scale = this.state.input / this.adapter.size;
-    }
 
     this.arr = [];
     for (let i = 0; i < this.state.size; i += 1) {
       this.arr.push(i);
     }
-
-    if (scale) {
-      this.onCeckItem(Math.floor(scale * this.state.size))
-    }
+   
     this.adapter && this.adapter.updateList();
   }
 
@@ -53,14 +47,10 @@ class Demo extends Component {
     this.setState({ date: e })
   }
 
-  componentDidMount() {
-    this.onClick();
-  }
-
   state = {
     value: '请输入内容',
     input: 0,
-    size: 10,
+    size: 100,
     isBadModel: false,
     data: [
       {
@@ -90,13 +80,13 @@ class Demo extends Component {
     ]
   }
 
-  onClick(index) {
-    this.adapter.checkItem(index);
-  }
+  // onClick(index) {
+  //   this.adapter.checkItem(index);
+  // }
 
-  onCeckItem(e) {
-    this.onClick(e); this.setState({ input: e })
-  }
+  // onCeckItem(e) {
+  //   this.onClick(e); this.setState({ input: e })
+  // }
 
   changeBadModel() {
     this.setState({ isBadModel: !this.state.isBadModel })
@@ -135,7 +125,10 @@ class Demo extends Component {
     return <div>
       <div style={{ padding: '20px' }}>
         <div style={{ paddingBottom: '10px' }}><input value={this.state.size} type='number' onChange={e => {
-          if (e.target.value * 1 > 0) this.setState({ size: e.target.value * 1 })
+          let value = e.target.value * 1;
+          value < 0 && (value = 0);
+          value > 200000 && (value = 200000);
+          this.setState({ size: value });
         }} />
           <button onClick={this.resize.bind(this)}>改变长度</button>
           <button onClick={this.changeBadModel.bind(this)}>改版浏览模式</button>

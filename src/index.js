@@ -1,8 +1,5 @@
 import React, { Component } from 'react';
 import './index.less';
-// import Operator from './operator';
-// const { by, operator, operators } = Operator;
-// const { throttleTime } = operators;
 
 export class List extends Component {
     constructor(props) {
@@ -24,10 +21,21 @@ export class List extends Component {
     componentDidMount() {
         const { adapter } = this.props;
         let height = 0;
-        !this.listRef.current ? (height = this.props.adapter.defaultHeight) : (height = this.listRef.current.clientHeight);
+        !this.listRef.current ? (height = adapter.defaultHeight) : (height = this.listRef.current.clientHeight);
+        const maxHeight = adapter.getItemHeight() * adapter.size;
+        if(maxHeight > 16000000) {
+            throw new Error('总高度已超出上限！');
+        }
+        if(maxHeight < this.state.maxHeight) {
+            this.setState({
+                start: 0,
+                offTop: 0,
+            });
+            this.listRef.current && (this.listRef.current.offTop = 0);
+        }
         this.setState({
             height,
-            maxHeight: adapter.getItemHeight() * adapter.size
+            maxHeight,
         });
     }
 
@@ -100,21 +108,8 @@ export class List extends Component {
 export class Adapter {
     list = null;
 
-    get cacheItemSize() {
-        return 10;
-    }
-
     get defaultHeight() {
         return 200;
-    }
-
-    get maxStart() {
-        try {
-            return this.list.state.maxStart;
-        } catch (err) {
-            return 0;
-        }
-
     }
 
     getDataArr() {
@@ -146,19 +141,6 @@ export class Adapter {
     onScroll(event) {
     }
 
-    checkItem(index) {
-        if (typeof index !== 'number') return;
-        setTimeout(() => {
-            if (index >= 0 && index < this.size) {
-                let start = index;
-                let paddingTop = 0;
-                index > this.list.state.maxStart && (start = this.list.state.maxStart) && (paddingTop = this.list.state.maxOff);
-                this.list.setState({ start, paddingTop });
-            } else {
-                console.warn(`${index} 设置超出了范围。`);
-            }
-        }, 0)
-    }
 }
 
 export default {
