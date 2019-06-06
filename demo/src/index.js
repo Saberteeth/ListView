@@ -1,9 +1,13 @@
 import React, { Component } from 'react';
 import 'antd/dist/antd.css';
 import { render } from 'react-dom'
-import ListView from '../../src';
 import { Slider, message } from 'antd';
+import './index.less';
+import ListView from '../../src';
 import iconSVG from './icon.svg'
+import Operator from './operator';
+const { by, operator, operators } = Operator;
+const { debounceTime } = operators;
 const { List, Adapter } = ListView;
 
 class Demo extends Component {
@@ -11,14 +15,19 @@ class Demo extends Component {
     super(props);
     const that = this;
     this.resize();
-    class MyAdapter extends Adapter {
+    class MyAdapter extends by(Adapter) {
       getDataArr() {
         return that.arr;
       }
 
+      @operator(debounceTime(500)) // 防止疯狂点击而已。
+      onItemClick(index) {
+        message.info(`${index} 被点击了。`);
+      }
+
       getItem(data, index) {
         const size = this.getItemHeight(index) - 20;
-        return <div style={{ fontSize: `${size == 60 ? 30 : 12}px`, padding: '10px'  }} onClick={()=>{ message.info(`${index} 被点击了。`) }} ><img height={size} src={iconSVG} style={{ marginRight: '10px' }} />{data}</div>;
+        return <div style={{ fontSize: `${size == 60 ? 30 : 12}px`, padding: '10px'  }} onClick={()=>{this.onItemClick(index)}} ><img height={size} src={iconSVG} style={{ marginRight: '10px' }} />{data}</div>;
       }
 
       getItemHeight(i) {
@@ -63,11 +72,11 @@ class Demo extends Component {
     size: 100,
     isBadModel: false,
   }
-
+  
   onClick(index) {
     this.adapter.checkItem(index);
   }
-
+  
   onCeckItem(e) {
     this.onClick(e); this.setState({ input: e })
   }
