@@ -57,7 +57,7 @@ class Demo extends Component {
   state = {
     value: '请输入内容',
     input: 0,
-    size: 100,
+    size: 30000,
     isBadModel: false,
     data: [
       {
