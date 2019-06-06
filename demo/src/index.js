@@ -1,24 +1,32 @@
 import React, { Component } from 'react';
 import 'antd/dist/antd.css';
 import { render } from 'react-dom'
+import Operator from './operator';
 import ListView from '../../src';
 import { Slider, message, Table } from 'antd';
 import iconSVG from './icon.svg'
 const { List, Adapter } = ListView;
+const { by, operator, operators } = Operator;
+const { debounceTime } = operators;
 
 class Demo extends Component {
   constructor(props) {
     super(props);
     const that = this;
     this.resize();
-    class MyAdapter extends Adapter {
+    class MyAdapter extends by(Adapter) {
       getDataArr() {
         return that.arr;
       }
 
+      @operator(debounceTime(500))
+      onClickItem(index) {
+        message.info(`${index} 被点击了。`);
+      }
+
       getItem(data, index) {
         const size = this.getItemHeight(index) - 20;
-        return <div style={{ fontSize: `${size == 60 ? 30 : 12}px`, padding: '10px'  }} onClick={()=>{ message.info(`${index} 被点击了。`) }} ><img height={size} src={iconSVG} style={{ marginRight: '10px' }} />{data}</div>;
+        return <div style={{ fontSize: `${size == 60 ? 30 : 12}px`, padding: '10px'  }} onClick={()=>{ this.onClickItem(index) }} ><img height={size} src={iconSVG} style={{ marginRight: '10px' }} />{data}</div>;
       }
 
       getItemHeight() {
@@ -33,8 +41,6 @@ class Demo extends Component {
   }
 
   resize() {
-    let scale = 0;
-
     this.arr = [];
     for (let i = 0; i < this.state.size; i += 1) {
       this.arr.push(i);
