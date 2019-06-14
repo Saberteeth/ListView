@@ -63,11 +63,11 @@ export class List extends Component {
     onScroll(e) {
         const { adapter } = this.props;
         let { start, offTop } = this.state;
-        const last = (off, index = 1) => {
+        const last = (off) => {
             return Math.round(((off - e.target.scrollTop)/adapter.getItemHeight()) + .5);
         }
        
-        const next = (off, index = 1) => {
+        const next = (off) => {
             return Math.round(((e.target.scrollTop - off)/adapter.getItemHeight()) + .5);
         }
        
@@ -83,16 +83,13 @@ export class List extends Component {
             offTop += offIndex * adapter.getItemHeight();
         }
         start < 0 && (start = 0, offTop = 0);
-        const lastScrollTop =  e.target.scrollTop;
+        this.lastTop =  e.target.scrollTop;
         this.setState({ start, offTop },()=>{
             // 修正高度
-            this.listRef.current.scrollTop = lastScrollTop;
+            this.listRef.current.scrollTop = this.lastTop;
         });
     }
-
-    get footHeight() {
-        return this.isEnding ? 0 : this.state.maxHeight - this.state.height - this.offTop;
-    }
+    lastTop = 0;
 
     render() {
         const { height = '100%' } = this.props;

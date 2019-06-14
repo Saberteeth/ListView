@@ -57,7 +57,7 @@ class Demo extends Component {
   state = {
     value: '请输入内容',
     input: 0,
-    size: 30000,
+    size: 300,
     isBadModel: false,
     data: [
       {
@@ -108,6 +108,7 @@ class Demo extends Component {
   }
 
   render() {
+    console.log(this.state);
     const style = {
       width: 400,
     };
