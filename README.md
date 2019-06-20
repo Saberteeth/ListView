@@ -1,4 +1,4 @@
-> 分支 scrollview 版本兼容浏览器原始滚动条。
+> 分支 scrollversion 版本兼容浏览器原始滚动条。
 
 # ListView
 ## 安装、调试
